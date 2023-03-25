@@ -1,0 +1,63 @@
+---
+title: "Proposal: A Comparison Between Classification Models Methods for Classifying Properties in the Hartford Real Estate Market As Etiher Affordable or Expensive"
+author: "Christine Nguyen"
+date: "March 24, 2023"
+format:
+  html:
+    code-fold: true
+  pdf: 
+    geometry: 
+      - top=30mm
+      - left=20mm
+    cite-method: natbib
+bibliography: propref23.bib
+---
+
+## Introduction
+
+The housing market is on the rise with recent times but what is unique within the market is the question: By how much is the market increasing or decreasing, and what properties are affordable for the middle class? With volatility in the market as a consideration, we attempt to insure a more stable course of action for consumers through classifying the market’s movement. We will use and compare a logistic regression model explained by He and He (2021) and a support vector machine model explained by Wang et al. (2008) to predict which better fits and classifies the market.
+
+
+## Specific Aims
+
+We will be studying the question: Which method better classifies properties in the Hartford real estate market as either affordable or expensive based on certain features (a property's location, square footage, number of bedrooms, appraisal and sale price)? The answer to this question may be a positive attempt at providing a structure for consumers to plan accordingly for investing in property and establish what to expect when considering certain factors and features (excluding the competition of offers). This beneficial as in the real estate field as there is an increase in interest for investing recently (Sanket Kurani, 2019). There is also a great effort towards planning for when to start searching, putting in offers, saving, and purchasing.
+
+## Data Description
+
+The data will be provided by CT Open Data, we will be utilizing ’Real Estate Sales 730 Days’ (HartfordData, 2022). There are 21 columns with 4,088 rows with variables: PropertyID, xrCompositeLandUseID, xrBuildingTypeID, ParcelID, Lo- cationStartNumber, ApartmentUnitNumber, StreetNameAndWay, xrPrimaryNeighborhoo- dID, LandSF, TotalFinishedArea, LivingUnits, OwnerLastName, OwnerFirstName, Prima- ryGrantor, SaleDate, SalePrice, TotalAppraisedValue, LegalReference, xrSalesValidityID, xrDeedID, and AssrLandUse. There is a mixture of categorical and numerical data ordered by sale date.
+
+## Research Design and Methods
+
+The plan of action is to fit the public data with both a logistic regression model and a support vector machine model via the Python programming language. Establishing features, we would also make the target variable ’sale price’ for classification after setting a threshold for what would be considered affordable or expensive for the middle class. We split the data into a training and testing set the train the instantiated classifier with the training data to predict the target variable. The models will be evaluated and compared by looking at precision, recall, F1-score and a confusion table for both models (Musa, 2012). These methods would help establish a better model for classifying the direction of the real estate market through certain evaluation criteria.
+
+## Discussion
+
+I expect to find that the market will move in a positive manner, with prices increasing adjacently to the relative appraisal price as well as other features increasing in frequency. I also expect that the support vector machine model will more accurately fit and classify the data, however we have to consider that support vector machine models are not ideal for large data sets. We must also take into account that competition for each home, insurance rates, property accommodations like garages, gas or oil for home heating, location and etc may affect the final sale prices and offers.
+
+The potential impacts of this work may be that the classification of the market will motivate many individuals to similarly invest in properties at a certain time, certain location, square footage or season and that can further affect the supply and demand of the market.
+
+If the results are not as expected, further studies must be done to evaluate what factors/features further affect the movement of the market, we must also then consider other confounding factors and why the logistic regression model is more accurate.
+
+## Conclusion
+
+This project intends to research and classify the movement of the real estate market and each homes affordability through a comparison between a logistic regressionmodel and a support vector machine model. We will be comparing the two models for accuracy in data fitting and prediction to hopefully ensure a more stable timeline or sought-out factors in the affordavble home purchasing process for consumers.
+
+# References
+
+HartfordData (2022), “Real Estate Sales 730 Days,” .
+
+
+He, K. and He, C. (2021), “Housing Price Analysis Using Linear Regression and Logistic Re- 
+  gression: A Comprehensive Explanation Using Melbourne Real Estate Data,” Electronic ISBN: 978-1-6654-3689-2.
+
+
+Musa, A. B. (2012), “Comparative study on classification performance between support vector 
+  machine and logistic regression,” International Journal of Machine Learning and Cybernetics.
+
+
+Sanket Kurani, Ramchandra Naik, V. B. S. P. (2019), “Statistical data analysis on real estate using 
+  data mining,” Print ISSN 2349-5138. 
+
+
+Wang, T., Li, Y.-Q., and Zhao, S.-F. (2008), “Application of SVM Based on Roguh Set in Real Real 
+  Estate Prices Prediction,” Print ISBN 978-1-4244-2107-7.
