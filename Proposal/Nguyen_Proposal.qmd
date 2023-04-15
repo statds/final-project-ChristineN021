@@ -1,5 +1,5 @@
 ---
-title: "Proposal: Predicting Properties Prices in the Hartford Real Estate Market As Either Affordable or Expensive With a Logistic Regression Model"
+title: "Proposal: Predicting Properties' Prices in the Hartford Real Estate Market As Either Affordable or Expensive With a Logistic Regression Model"
 author: "Christine Nguyen"
 date: "April 14, 2023"
 format:
