@@ -1,0 +1,492 @@
+---
+title: "A Comparison Between Classification Model Methods for Classifying Properties in the Hartford Real Estate Market As Either Affordable or Expensive"
+author: "Christine Nguyen"
+date: "April 24, 2023"
+format:
+  html:
+    code-fold: true
+    cite-method: biblatex
+  pdf: 
+    geometry: 
+      - top=30mm
+      - left=20mm
+jupyter: stat2255
+bibliography: propref23.bib
+bst: asa.bst
+---
+
+## Abstract
+
+The Hartford real estate market is in high demand currently with an importance to real estate businesses and home investors, however meticulously identifying properties as affordable or expensive remains a challenge. This paper addresses this specific gap in the literature for the Hartford area by comparing the performance of two common machine learning algorithms, the Support Vector Machines (SVM) and Logistic Regression models, in classifying properties based on total finished square footage, land square footage, number of bedrooms, total appraised value and sale price. This paper highlights a direct comparison of the SVM model and Logistic Regression model on this specific problem. Our results show that SVM outperformed the regularized logistic regression model in accurately classifying properties as affordable or expensive. The methodology and evidence supporting this approach will be outlined in detail, including summary statistics, correlation matrix, scatter plot matrix, and feature importances. These findings have important implications for real estate professionals and investors seeking to accurately classify properties in the Hartford real estate market in hopes of establishing a stable investment progress.
+
+{Keywords}: Hartford Real Estate Market, Property Classification, Regularized Logistic Regression, Support Vector Machines (SVM).
+
+## Introduction
+
+Analyzing the real estate market can provide insights into the overall condition of an economy as it is an important economic indicator. The data set provided by HartfordData (2022) on real estate sales in the past 730 days (2 years) in Hartford, Connecticut provides valuable information for insights on the current state of the market. In order to fully understand and conceptualize the data, we will highlight existing research and methods in the field.
+
+He and He (2021) used linear and logistic regression to analyze housing prices in Melbourne, Australia establishing a thorough explanation of their methods. Musa (2012) conducted a comparative study on the classification performance of SVM and logistic regression utilizing real estate data, highlighting the importance of choosing the appropriate machine learning algorithm based on the accuracy of predictions as well, however this study did not focus on Hartford Real estate data. Sanket Kurani (2019) conducted statistical data analysis on real estate in India using data mining techniques, providing insights into factors that influence real estate prices (location, proximity to amenities, and property size). Wang et al. (2008) applied SVM based on rough sets, a mathematical theory that intends to tackle uncertainty and vagueness in data analysis, to predict real estate prices in China.
+
+Despite the existing research, there is still an incentive to analyze specifically the Hartford, CT real estate market specifically, as depending on regions, the factors that influence it may differ. This paper aims to contribute by analyzing the HartfordData (2022) data set and applying machine learning algorithms to classify affordability based on real estate prices. This work will include providing insights into the current status of the Hartford real estate market and comparing the performance of different machine learning algorithms for this specific data set.
+
+In this introduction, an overview of the topic of real estate analysis was provided, we highlighted existing works in the field, identified an incentive for this direction in research due to a gap in the literature specific to the Hartford real estate market, and noted the contributions of this paper.
+
+The following sections will provide a thorough analysis of the data set and discuss the methods used to classify property affordability. The rest of the paper is organized as follows. The data will be presented in Section 2. Section 3 describes the two machine learning algorithm methods. The results and application will be reported in Section 4. The results are discussed in Section 5, and a summary concludes in Section 6.
+
+## Data Description
+
+The data used in this study was collected by HartfordData (2022) and provides information on real estate sales in Hartford over the past 730 days (2 years). The data set contains 4,088 observations (rows) with 21 features explained by Mushtaq (2020): PropertyID is a unique identifier for each property, xrCompositeLandUseID is a code representing the type of land use for the property, xrBuildingTypeID is a code representing the type of building on the property, ParcelID is unique identifier for the parcel of land, LocationStartNumber is a starting number of the property’s street address, ApartmentUnitNumber is a unit number of the property’s apartment (if applicable), StreetNameAndWay is a name of the street where the property is located, xrPrimaryNeighborhoodID is a code representing the primary neighborhood where the property is located, LandSF is a land square footage of the property, TotalFinishedArea is a total finished square footage of the property, LivingUnits is a number of living units in the property, OwnerLastName is a last name of the property’s owner, OwnerFirstName is a first name of the property’s owner, PrimaryGrantor is a name of the primary grantor of the property, SaleDate (Date and time with timezone) is a date when the property was sold, SalePrice is a sale price of the property, TotalAppraisedValue is a total appraised value of the property, LegalReference is a legal reference of the property, xrSalesValidityID is a code representing the sales validity of the property, xrDeedID is a code representing the type of deed for the property and the final variable, AssrLandUse.
+
+```{python}
+#| echo: false
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import GridSearchCV, train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
+from sklearn.pipeline import Pipeline
+import matplotlib.pyplot as plt
+
+data = pd.read_csv('/Users/christinen/stat_3255/final-project-ChristineN021/Data/Hartford730.csv')
+```
+
+```{python}
+# Show the first five rows of the data
+pd.set_option('display.max_columns', None)
+data.head()
+```
+
+![Table 1: Summary Statistics Table for Relevant Numerical Features of Uncleaned Hartford Real Estate Data. Wherever ”App.” is mentioned, it alludes to the approximated summarized value.](numsum.png)
+
+Below is the frequency and visualization for some categorical features in the uncleaned data set for descriptive statistical purposes:
+
+```{python}
+# select categorical columns to visualize
+cat_cols = ['xrCompositeLandUseID', 'xrBuildingTypeID', 'xrPrimaryNeighborhoodID', 'xrSalesValidityID', 'xrDeedID', 'AssrLandUse']
+
+# plot the frequency of each categorical variable
+for col in cat_cols:
+    data[col].value_counts().plot(kind='bar')
+    plt.title(col)
+    plt.show()
+```
+
+```{python}
+for col in cat_cols:
+    freq = data[col].value_counts()
+    pct = freq / len(data) * 100
+    cat_data = pd.concat([freq, pct], axis=1, keys=['Frequency', 'Percentage'])
+    print(f"Column name: {col}")
+    print(cat_data)
+```
+
+```{python}
+# Check for missing values
+data.isnull().sum()
+```
+
+```{python}
+# Check for duplicates
+data.duplicated().sum()
+```
+
+The uncleaned data itself has no duplicated observations but some missing values: 2 for xrBuildingTypeID, 2959 for ApartmentUnitNumber, 1129 for LandSF, 113 for TotalFinishedArea, 2 for LivingUnits, 6 for OwnerLastName, and 1402 for OwnerFirstName.
+
+## Methods
+
+### Data Preparation
+
+To prepare the data for analysis, we cleaned the data set by removing missing values and duplicates. Then we normalized the numerical features, and created a binary variable based on a threshold established with a certain price ($250,000) to define properties as affordable or expensive. We selected certain features such as TotalFinishedArea, LivingUnits, LandSF, TotalAppraisedValue, and SalePrice. We then split the data set into training and testing sets with a 80:20 split, respectively. The target variable was affordability based on a binary variable (0 if less then or equal to $250,000 which is affordable, otherwise 1 or expensive) created from SalePrice with a set threshold.
+
+After cleaning the data by removing null values then selecting relevant features/columns, we can visualize the data and perform some exploratory data analysis. The cleaned data set now has 1,971 observations and 10 features.
+
+```{python}
+# Select relevant feature columns
+
+selected_columns = ['PropertyID', 'StreetNameAndWay', 'LivingUnits', 'LegalReference', 'SalePrice', 'TotalAppraisedValue', 'LandSF', 'TotalFinishedArea', 'SaleDate', 'AssrLandUse']
+cleaned = data[selected_columns]
+print(cleaned.head())
+```
+
+```{python}
+# Check for missing values
+cleaned.isnull().sum()
+```
+
+```{python}
+# Remove rows with missing values
+cleaned.dropna(inplace=True)
+```
+
+```{python}
+# Check for missing values
+cleaned.isnull().sum()
+```
+
+```{python}
+# Check for duplicates
+cleaned.duplicated().sum()
+```
+
+```{python}
+# Drop SalePrice, TotalFinishedArea and LandSF if they are zero, not plausible
+cleaned = cleaned[cleaned['SalePrice'] != 0]
+cleaned = cleaned[cleaned['LandSF'] != 0]
+cleaned = cleaned[cleaned['TotalFinishedArea'] != 0] 
+```
+
+```{python}
+# Check for unique values in the Cleaned Dataset
+print(cleaned.value_counts())
+```
+
+```{python}
+# Check for duplicates
+cleaned.duplicated().sum()
+```
+
+```{python}
+# Drop duplicates
+cleaned.drop_duplicates(inplace=True)
+# Check again for duplicates
+cleaned.duplicated().sum()
+```
+
+```{python}
+print(cleaned)
+```
+
+### Exploratory Data Analysis
+
+Show basic statistics of the numerical features:
+
+```{python}
+# Show basic statistics of the numerical features
+pd.options.display.float_format = '{:.2f}'.format
+description = cleaned.drop('PropertyID', axis=1).describe()
+print(description)
+```
+
+Correlation heatmap of numerical features:
+
+```{python}
+# Correlation heatmap of numerical features
+corr = cleaned.drop('PropertyID', axis=1).corr()
+sns.heatmap(corr, annot=True, cmap='coolwarm')
+```
+
+Scatter plot of TotalFinishedArea vs SalePrice:
+
+```{python}
+import matplotlib.pyplot as plt
+plt.scatter(cleaned['TotalFinishedArea'], cleaned['SalePrice'])
+plt.xlabel('Total Finished Area')
+plt.ylabel('Sale Price')
+plt.title('Scatter plot of Total Finished Area vs Sale Price')
+plt.show()
+```
+
+Boxplot of SalePrice by LivingUnits:
+
+```{python}
+import seaborn as sns
+sns.boxplot(x='LivingUnits', y='SalePrice', data=cleaned)
+plt.title('Boxplot of Sale Price by Living Units')
+plt.show()
+```
+
+Bar chart of AssrLandUse counts:
+
+```{python}
+assr_land_use_counts = cleaned['AssrLandUse'].value_counts()
+plt.bar(assr_land_use_counts.index, assr_land_use_counts.values)
+plt.xticks(rotation=90)
+plt.xlabel('Assr Land Use')
+plt.ylabel('Count')
+plt.title('Bar chart of Assr Land Use counts')
+plt.show()
+```
+
+Histogram of SalePrice:
+
+```{python}
+plt.hist(cleaned['SalePrice'], bins=30)
+plt.xlabel('Sale Price')
+plt.ylabel('Frequency')
+plt.title('Histogram of Sale Price')
+plt.show()
+```
+
+Box plot of SalePrice by AssrLandUse:
+
+```{python}
+import seaborn as sns
+
+sns.boxplot(x='AssrLandUse', y='SalePrice', data=cleaned)
+```
+
+Scatter plot of SalePrice vs. TotalAppraisedValue:
+
+```{python}
+import matplotlib.pyplot as plt
+
+plt.scatter(cleaned['TotalAppraisedValue'], cleaned['SalePrice'])
+plt.xlabel('Total Appraised Value')
+plt.ylabel('Sale Price')
+plt.show()
+```
+
+Property Type vs. Sale Price Heatmap, this heatmap shows the average sale price for each property type in the dataset:
+
+```{python}
+import pandas as pd
+import matplotlib.pyplot as plt
+
+df = cleaned[['AssrLandUse', 'SalePrice']]
+df = df.groupby('AssrLandUse').mean()
+df = df.reset_index()
+
+plt.figure(figsize=(12,8))
+plt.title('Average Sale Price by Property Type')
+sns.heatmap(df.pivot(index='AssrLandUse', columns='SalePrice', values='SalePrice'), cmap='coolwarm', annot=True, fmt=".0f", cbar=False)
+plt.show()
+```
+
+Scatterplot matrix: a grid of scatterplots that shows the relationship between each pair of variables in a dataset:
+
+```{python}
+# select the variables to plot
+variables = ['SalePrice', 'TotalAppraisedValue', 'LandSF', 'TotalFinishedArea', 'LivingUnits']
+
+# create the scatterplot matrix
+sns.pairplot(cleaned[variables])
+```
+
+### Machine Learning Models
+
+Two machine learning models were trained on the cleaned data to classify real estate affordability: SVM model with a radial basis function kernel and a regularized logistic regression model.
+
+#### Support Vector Machines (SVM)
+
+SVM is a classification algorithm that has been widely used in real estate price prediction (Wang et al., 2008). In this study, we used the SVM execution provided by the scikit-learn ibrary in Python (Pedregosa et al., 2011b). In addition to handling high-dimensional data, it can manage complex datasets. As explained previously, specifically, we used the Radial Basis Function (RBF) kernel, it works by projecting the data into a higher-dimensional space and then finding the best hyperplane that separates the data into different classes. We conducted a grid search to find the optimal hyperparameters for the SVM model, including the regularization parameter C and the kernel-specific parameters. Grid search is a common approach used to determine the optimal hyperparameters for machine learning models.
+
+#### Regularized Logistic Regression
+
+Logistic regression is a statistical method for binary classification problems (He and He, 2021). In this study, we used the logistic regression progress provided by the scikit-learn library in Python as well; logistic regression can be used in the context of real estate price prediction to determine whether a property will sell or not depending on several characteristics. This study will utilize a regularized logistic regression model as the regularization technique is used to prevent overfitting in the model. A penalty term is added to the loss function. We also conducted a grid search with this model to find the optimal hyperparameters for the logistic regression model, including the regularization parameter C which controls the strength of the regularization. Smaller values result in stronger regularization and by using this model we can improve the model’s general performance on new data.
+
+### Model Evaluation
+
+The performance of the SVM and logistic regression models was evaluated using these metrics: mean absolute error (MAE), mean squared error (MSE), accuracy, precision, recall, F1-score, a confusion table for both models (Musa, 2012) and coefficient of determination (R-squared). These methods would help establish a better model for forecasting the direction of the real estate market through certain evaluation criteria. These metrics were calculated on the test set to assess the generalization performance of the models. In addition, we used visualizations, such as scatterplots and residual plots, to analyze the performance of the models and identify any patterns or outliers in the data.
+
+The significance level for all statistical tests was set to 0.5. All analyses were conducted using Python version 3.10.4 and the scikit-learn library.
+
+## Results and Application
+
+I applied both SVM of the RBF kernel and regularized logistic regression models to classify properties in the Hartford real estate market as affordable or expensive based on certain fea- tures. Our analysis included square footage, land square footage, number of bedrooms, and appraised value as predictors. We created a target variable of affordability by establishing a binary variable from sale price and setting a price threshold of $250,000.
+
+### Regularize Logistic Regression Model
+
+```{python}
+import pandas as pd
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import GridSearchCV, train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
+from sklearn.pipeline import Pipeline
+import matplotlib.pyplot as plt
+```
+
+```{python}
+# Create a binary target variable: affordable (0) or expensive (1)
+cleaned['Target'] = cleaned['SalePrice'].apply(lambda x: 0 if x <= 250000 else 1)
+```
+
+```{python}
+# Split the dataset into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(cleaned[['TotalFinishedArea', 'SalePrice', 'LandSF', 'TotalAppraisedValue', 'LivingUnits']], cleaned['Target'], test_size=0.2, random_state=42)
+```
+
+```{python}
+# Scale numerical variables using standardization or normalization
+scaler = StandardScaler()
+X_train[['TotalFinishedArea', 'SalePrice', 'LandSF', 'TotalAppraisedValue', 'LivingUnits']] = scaler.fit_transform(X_train[['TotalFinishedArea', 'SalePrice', 'LandSF', 'TotalAppraisedValue', 'LivingUnits']])
+X_test[['TotalFinishedArea', 'SalePrice', 'LandSF', 'TotalAppraisedValue', 'LivingUnits']] = scaler.transform(X_test[['TotalFinishedArea', 'SalePrice', 'LandSF', 'TotalAppraisedValue', 'LivingUnits']])
+```
+
+```{python}
+# Create a pipeline that scales the data and applies regularized logistic regression with penalty parameter tuning
+pipeline = Pipeline([
+    ('scaler', StandardScaler()),
+    ('clf', LogisticRegression(penalty='elasticnet', solver='saga', max_iter=10000))
+])
+
+param_grid = {'clf__l1_ratio': [0, 0.25, 0.5, 0.75, 1], 'clf__C': [0.001, 0.01, 0.1, 1, 10, 100]}
+
+grid_search = GridSearchCV(pipeline, param_grid=param_grid, cv=5)
+grid_search.fit(X_train, y_train)
+```
+
+```{python}
+# Predict the target variable using the best model
+y_pred = grid_search.best_estimator_.predict(X_test)
+```
+
+```{python}
+# Evaluate the performance of the model
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+
+print(f"Accuracy: {accuracy:.3f}")
+print(f"Precision: {precision:.3f}")
+print(f"Recall: {recall:.3f}")
+print(f"F1-score: {f1:.3f}")
+```
+
+```{python}
+# Calculate the confusion matrix
+conf_matrix = confusion_matrix(y_test, y_pred)
+```
+
+```{python}
+# Visualize the confusion matrix
+plt.imshow(conf_matrix, cmap=plt.cm.Blues)
+plt.title("Confusion Matrix Regularlized Logistic Regression")
+plt.colorbar()
+tick_marks = [0, 1]
+plt.xticks(tick_marks, ['Affordable', 'Expensive'])
+plt.yticks(tick_marks, ['Affordable', 'Expensive'])
+plt.xlabel('Predicted Label')
+plt.ylabel('True Label')
+
+plt.show()
+```
+
+```{python}
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+
+# Calculate the mean absolute error
+mae = mean_absolute_error(y_test, y_pred)
+
+# Calculate the mean squared error
+mse = mean_squared_error(y_test, y_pred)
+
+# Calculate the R-squared value
+r2 = r2_score(y_test, y_pred)
+
+# Print the metrics
+print(f"Mean Absolute Error: {mae:.3f}")
+print(f"Mean Squared Error: {mse:.3f}")
+print(f"R-squared: {r2:.3f}")
+```
+
+### SVM Model
+
+```{python}
+import pandas as pd
+from sklearn.svm import SVC
+from sklearn.model_selection import GridSearchCV, train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
+import matplotlib.pyplot as plt
+```
+
+```{python}
+# Split the dataset into training and testing sets
+X_train_svm, X_test_svm, y_train_svm, y_test_svm = train_test_split(cleaned[['TotalFinishedArea', 'SalePrice', 'LandSF', 'TotalAppraisedValue', 'LivingUnits']], cleaned['Target'], test_size=0.2, random_state=42)
+```
+
+```{python}
+# Scale numerical variables using standardization or normalization
+scaler_svm = StandardScaler()
+X_train_svm[['TotalFinishedArea', 'SalePrice', 'LandSF', 'TotalAppraisedValue', 'LivingUnits']] = scaler_svm.fit_transform(X_train_svm[['TotalFinishedArea', 'SalePrice', 'LandSF', 'TotalAppraisedValue', 'LivingUnits']])
+X_test_svm[['TotalFinishedArea', 'SalePrice', 'LandSF', 'TotalAppraisedValue', 'LivingUnits']] = scaler_svm.transform(X_test_svm[['TotalFinishedArea', 'SalePrice', 'LandSF', 'TotalAppraisedValue', 'LivingUnits']])
+```
+
+```{python}
+# Create a pipeline that scales the data and applies SVM with hyperparameter tuning
+pipeline_svm = Pipeline([
+    ('scaler_svm', StandardScaler()),
+    ('clf_svm', SVC(kernel='rbf'))
+])
+
+param_grid_svm = {'clf_svm__C': [0.001, 0.01, 0.1, 1, 10, 100], 'clf_svm__gamma': [0.001, 0.01, 0.1, 1, 10, 100]}
+
+grid_search_svm = GridSearchCV(pipeline_svm, param_grid=param_grid_svm, cv=5)
+grid_search_svm.fit(X_train_svm, y_train_svm)
+```
+
+```{python}
+# Predict the target variable using the best model
+y_pred_svm = grid_search_svm.best_estimator_.predict(X_test_svm)
+```
+
+```{python}
+# Evaluate the performance of the model
+accuracy_svm = accuracy_score(y_test_svm, y_pred_svm)
+precision_svm = precision_score(y_test_svm, y_pred_svm)
+recall_svm = recall_score(y_test_svm, y_pred_svm)
+f1_svm = f1_score(y_test_svm, y_pred_svm)
+
+print(f"Accuracy: {accuracy_svm:.3f}")
+print(f"Precision: {precision_svm:.3f}")
+print(f"Recall: {recall_svm:.3f}")
+print(f"F1-score: {f1_svm:.3f}")
+```
+
+```{python}
+# Calculate the confusion matrix
+conf_matrix_svm = confusion_matrix(y_test_svm, y_pred_svm)
+```
+
+```{python}
+# Visualize the confusion matrix
+plt.imshow(conf_matrix_svm, cmap=plt.cm.Reds)
+plt.title("Confusion Matrix")
+plt.colorbar()
+tick_marks_svm = [0, 1]
+plt.xticks(tick_marks_svm, ['Affordable', 'Expensive'])
+plt.yticks(tick_marks_svm, ['Affordable', 'Expensive'])
+plt.xlabel('Predicted')
+plt.ylabel('True')
+plt.show()
+```
+
+```{python}
+# Calculate the mean absolute error (MAE), mean squared error (MSE), and coefficient of determination (R-squared)
+mae_svm = mean_absolute_error(y_test_svm, y_pred_svm)
+mse_svm = mean_squared_error(y_test_svm, y_pred_svm)
+r2_svm = r2_score(y_test_svm, y_pred_svm)
+
+# Print the results
+print("SVM Model:")
+print(f"MAE: {mae_svm:.3f}")
+print(f"MSE: {mse_svm:.3f}")
+print(f"R-squared: {r2_svm:.3f}")
+```
+
+SVM outperformed logistic regression in terms of accuracy, precision, recall, and F1-score by a significant margin. The SVM model had an accuracy of 0.970, precision of 0.959, recall of 0.944, and F1-score of 0.952, while the Logistic Regression model had an accuracy of 0.897, precision of 0.858, recall of 0.728, and F1-score of 0.788.
+
+In terms of regression metrics, the SVM model also outperforms the regularized logistic regression model. The SVM model has a lower MAE and MSE, indicating that it makes less errors on average, and a higher R-squared value, indicating that it explains more of the variance in the data.
+
+To further visualize the performance of the models, a confusion matrix shows quite similar results in shading of how well the models are performing with true positives (TP), false positives (FP), true negatives (TN), and false negatives (FN).
+
+Overall, both in terms of classification and regression metrics, the SVM model seems to be the model that performs best. It’s crucial to remember that the model used will ultimately depend on the particular issue and data set at hand, as well as possible additional considerations like interpretability and processing cost.
+
+## Discussion and Conclusion
+
+I expected that the SVM model will more accurately fit and predict the data, however we have to consider that SVM models are not ideal for large data sets. Some limitations were that only a limited set of features were considered. We must also take into account that there is an offer competition for each home, insurance rates, local amenities, property accommodations like garages which may affect pricing, gas or oil for home heating, location and etc. We also used only one data set and cannot generalize our results to other real estate markets.
+
+The potential impacts of this work may be that the prediction of the market will motivate many individuals to similarly invest in properties at a certain time or season and that can further affect the supply and demand of the market. The results will provide useful insights to the Hartford real estate market.
+
+In conclusion, our study provides evidence that the SVM model with an RBF kernel is a better model than the regularized logistic regression model for classifying properties in the Hartford real estate market as affordable or expensive based on certain features. While the study has some limitations, these findings have important implications for home-seeking investors in the real estate industry who are interested in accurately classifying properties and making informed decisions.
+
+## References
+
+::: {#refs}
+:::

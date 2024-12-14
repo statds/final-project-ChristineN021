@@ -1,0 +1,84 @@
+## Predicting Properties' Prices in the Hartford Real Estate Market As Either Affordable or Expensive With a Logistic Regression Model
+
+
+### Abstract
+
+The Hartford real estate market is in high demand currently with an importance to real estate businesses and home investors, however meticulously identifying properties as affordable or expensive remains a challenge. This paper addresses this specific gap in the literature for the Hartford area by evaluating the performance of a common machine learning algorithm, the Regularlized Logistic Regression model, in predicting properties' prices based on square footage, number of bedrooms, and sale price. Tthe fitting of a Logistic Regression on this specific problem. Our results show that -blank- features are important in predicting prices of properties. The methodology and evidence supporting this approach will be outlined in detail, including summary statistics, correlation matrix, scatter plot matrix, and feature importances. These findings have important implications for real estate professionals and investors seeking to accurately classify properties in the Hartford real estate market in hopes of establishing a stable investment progress.
+
+Keywords: Hartford Real Estate Market, Regularlized Logistic Regression, Property Classification, Price Prediction, Machine Learning.
+
+
+### Section 1: Introduction
+
+Analyzing the real estate market can provide insights into the overall condition of an economy as it is an important economic indicator. The data set provided by HartfordData (2022) on real estate sales in the past 730 days (2 years) in Hartford, Connecticut provides valuable information for insights on the current state of the market. In order to fully understand and conceptualize the data, we will highlight existing research and methods in the field. He and He (2021) used linear and logistic regression to analyze housing prices in Melbourne, Australia establishing a thorough explanation of their methods. Musa (2012) conducted a comparative study on the classification performance of support vector machines and logistic regression utilizing real estate data, highlighting the importance of choosing the appropriate machine learning algorithm based on the accuracy of predictions. Sanket Kurani (2019) conducted statistical data analysis on real estate in India using data mining techniques, providing insights into factors that influence real estate prices (location, proximity to amenities, and property size). Wang et al. (2008) applied support vector machines based on rough sets, a mathematical theory that intends to tackle uncertainty and vagueness in data analysis, to predict real estate prices in China.
+
+Despite the existing research, there is still an incentive to analyze the Hartford real estate market specifically, as depending on regions, the factors that influence it may differ. This paper aims to contribute by analyzing the HartfordData (2022) data set and applying machine learning algorithms to classify affordability based on real estate prices. This work will include providing insights into the current status of the Hartford real estate market and comparing the performance of different machine learning algorithms for this specific data set.
+
+In this introduction, an overview of the topic of real estate analysis was provided, we highlighted existing works in the field, identified an incentive for this direction in research due to a gap in the literature specific to the Hartford real estate market, and noted the contributions of this paper.
+
+The following sections will provide a thorough analysis of the data set and discuss the methods used to classify property affordability. The rest of the paper is organized as follows. The data will be presented in Section 2. Section 3 describes the two machine learning algorithm methods. The results and application will be reported in Section 4. A discussion in Section 5 and conclusion in Section 6.
+
+
+### Section 2: Data Description
+
+The data used in this study was collected by HartfordData (2022) and provides information on real estate sales in Hartford over the past 730 days (2 years). The data set contains 4,088 observations (rows) with 21 features explained by Mushtaq (2020): PropertyID is a unique identifier for each property, xrCompositeLandUseID is a code representing the type of land use for the property, xrBuildingTypeID is a code representing the type of building on the property, ParcelID is unique identifier for the parcel of land, LocationStartNumber is a starting number of the property’s street address, ApartmentUnitNumber is a unit number of the property’s apartment (if applicable), StreetNameAndWay is a name of the street where the property is located, xrPrimaryNeighborhoodID is a code representing the primary neighborhood where the property is located, LandSF is a land square footage of the property, TotalFinishedArea is a total finished square footage of the property, LivingUnits is a number of living units in the property, OwnerLastName is a last name of the property’s owner, OwnerFirstName is a first name of the property’s owner, PrimaryGrantor is a name of the primary grantor of the property, SaleDate (Date and time with timezone) is a date when the property was sold, SalePrice is a sale price of the property, TotalAppraisedValue is a total appraised value of the property, LegalReference is a legal reference of the property, xrSalesValidityID is a code representing the sales validity of the property, xrDeedID is a code representing the type of deed for the property and the final variable, AssrLandUse.
+
+Table 1 summarizes the numerical features in our data set. Where ever ”App.” is mentioned, it alludes to the approximated summarized value.
+
+![Table 1: Summary Statistics Table for Numerical Features of Uncleaned Hartford Real Estate Data.](sumstat.png)
+
+Figure 1 shows the distribution of some numerical feature in the uncleaned data set.
+
+![Figure 1: Histogram of Some Numerical Features for Uncleaned Hartford Real Estate Data](fig1.png)
+
+Figure 2 shows the relationship between some pairs of features in the uncleaned data set. This can help to identify any patterns or trends.
+
+![Figure 2: Pairplot of Some Numerical Features for Uncleaned Hartford Real Estate Data](fig2.png)
+
+Figure 3 shows the correlation coefficients between some pairs of features in the uncleaned data set. This can help to identify the correlation coefficients between.
+
+![Figure 3: Correlation Matrix of Some Numerical Features for Uncleaned Hartford Real Estate Data](fig3.png)
+
+### Section 3: Methods
+
+#### Section 3.1: Data Preparation
+
+To prepare the data for analysis, we cleaned the data set by removing missing values and duplicates, normalizing the numerical features, and creating a binary variable based on a threshold established with the median market housing value to define properties as affordable or expensive. We also geocoded missing locations within the data set. We selected certain features such as TotalFinishedArea, LivingUnits, TotalAppraisedValue, and SalePrice. We then split the data set into training and testing sets with a 80:20 split, respectively. The target variable was affordability based on a binary variable created from SalePrice with a set threshold and we aim to predict the housing prices.
+
+#### Section 3.2: Regularized Logistic Regression Model
+
+Logistic regression is a statistical method for binary classification problems (He and He, 2021). In this study, we used the logistic regression progress provided by the scikit-learn library in Python as well. We also conducted a grid search with this model to find the optimal hyperparameters for the logistic regression model, including the regularization parameter C.
+
+#### Section 3.3: Assumptions
+
+* 1. Linearity: Logistic regression assumes that the relationship between the dependent variable and the independent variables is linear. If this assumption is not met, then the model may not be efficient. This assumption will be checked by evaluating the scatter plots of the dependant variable against each independent variable.
+
+* 2. Independence: The model assumes that the observations are independent of each other and identically distributed. If there is dependence among the observations, we risk the model being biased. We will check this by looking at the residuals to see if there is any correlation or pattern.
+
+* 3. Outliers: The logistic regression model is sensitive to outliers in the data. We can check this using the scatterplots of each independent variable after cleaning the data. 
+
+* 4. Homoscedasticity: Logistic regression assumes that the variance of the errors is constant across all levels of the independent variables. If the variance of the errors is not constant, then we risk the model also being biased. We will examine this assumption through looking at the residuals again but checking to see if there is an increasing or decreasing variance pattern as the predicted values increase.
+
+* 5. Normality: Logistic regression assumes that the errors are normally distributed. This assumption will be evaluated by looking at the distribution of the residuals to see if its normal.
+
+* 6. Large sample size: The model requires a large sample size to perform efficiently. The model may not be reliable if the sample size is too small. This assumption is met with this data set as there are 4,088 rows with 21 features.
+
+*I will include all of the assumptions' validity eventually.*
+
+#### Section 3.4: Model Evaluation
+
+The performance of the regularlized logistic regression model was evaluated using six metrics: mean absolute error (MAE), mean squared error (MSE), precision, recall, F1-score, a confusion table for both models (Musa, 2012) and coefficient of determination (R-squared). These methods would help establish a better model for forecasting the direction of the real estate market through certain evaluation criteria. These metrics were calculated on the test set to assess the generalization performance of the models. In addition, we used visualizations, such as scatterplots and residual plots, to analyze the performance of the model and identify any patterns or outliers in the data. The significance level for all statistical tests was set to -blank-. All analyses were conducted using Python version 3.8.5 and the scikit-learn library version 0.24.2.
+
+### Section 4: Results and Application
+
+### Section 5: Discussion
+
+I expect to find that the market will move in a positive manner, with prices increasing adjacently to the relative appraisal price. I also expect -blank- features with the Regularlized Regression Model will more accurately fit and predict the data. Some limitations were that only a limited set of features were considered. We must also take into account that there is an offer competition for each home, insurance rates, local amenities, property accommodations like garages, gas or oil for home heating, location and etc. We also used only one data set and cannot generalize our results to other real estate markets.
+
+The potential impacts of this work may be that the prediction of the market will motivate many individuals to similarly invest in properties at a certain time or season and that can further affect the supply and demand of the market. The results will provide useful insights to the Hartford real estate market.
+
+If the results are not as expected, further studies must be done to evaluate what other factors further affect the movement of the market, we must also then consider other confounding factors and why the logistic regression model is more accurate.
+
+### Section 6: Conclusion
+
+### References
